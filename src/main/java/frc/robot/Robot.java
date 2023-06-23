@@ -4,9 +4,17 @@
 
 package frc.robot;
 
+import java.util.Map;
+
+import org.northernforce.util.NFRRobotChooser;
+import org.northernforce.util.NFRRobotContainer;
+
+// import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.XboxController;
+// import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+// import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.robots.Wheely;
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -15,20 +23,22 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
  * project.
  */
 public class Robot extends TimedRobot {
-  private static final String kDefaultAuto = "Default";
-  private static final String kCustomAuto = "My Auto";
-  private String m_autoSelected;
-  private final SendableChooser<String> m_chooser = new SendableChooser<>();
-
+  private final NFRRobotChooser chooser = new NFRRobotChooser(() -> new Wheely(), Map.of("wheely", () -> new Wheely()));
+  private NFRRobotContainer container;
+  private final XboxController driverController = new XboxController(0), manipulatorController = new XboxController(1);
+  // private Command autonomousCommand;
+  // private final SendableChooser<Command> autonomousChooser = new SendableChooser<>();
+  // private final SendableChooser<Pose2d> startingLocationChooser = new SendableChooser<>();
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
   public void robotInit() {
-    m_chooser.setDefaultOption("Default Auto", kDefaultAuto);
-    m_chooser.addOption("My Auto", kCustomAuto);
-    SmartDashboard.putData("Auto choices", m_chooser);
+    container = chooser.getNFRRobotContainer();
+    container.bindOI(driverController, manipulatorController);
+    // var autoOptions = container.getAutonomousOptions();
+    // var startingLocations = container.getStartingLocations();
   }
 
   /**
@@ -39,7 +49,9 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    container.periodic();
+  }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
@@ -53,23 +65,12 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void autonomousInit() {
-    m_autoSelected = m_chooser.getSelected();
-    // m_autoSelected = SmartDashboard.getString("Auto Selector", kDefaultAuto);
-    System.out.println("Auto selected: " + m_autoSelected);
   }
 
   /** This function is called periodically during autonomous. */
   @Override
   public void autonomousPeriodic() {
-    switch (m_autoSelected) {
-      case kCustomAuto:
-        // Put custom auto code here
-        break;
-      case kDefaultAuto:
-      default:
-        // Put default auto code here
-        break;
-    }
+    container.autonomousPeriodic();
   }
 
   /** This function is called once when teleop is enabled. */
