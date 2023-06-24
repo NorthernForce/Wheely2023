@@ -1,17 +1,17 @@
 {
     "fileName": "NFRLib.json",
     "name": "NFRLib",
-    "version": "2023.2.0",
+    "version": "2023.2.1",
     "uuid": "515fe07e-bfc6-11fa-b3de-0242ac130004 ",
     "mavenUrls": [
         "https://repo.repsy.io/mvn/cml1010101/nfr-lib"
     ],
-    "jsonUrl": "https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/nfrlib-json/2023.2.0/nfrlib-json-2023.2.0",
+    "jsonUrl": "https://repsy.io/mvn/cml1010101/nfr-lib/org/northernforce/nfrlib-json/2023.2.1/nfrlib-json-2023.2.1",
     "javaDependencies": [
         {
             "groupId": "org.northernforce",
             "artifactId": "nfrlib-java",
-            "version": "2023.2.0"
+            "version": "2023.2.1"
         }
     ],
     "jniDependencies": [],
