@@ -114,8 +114,8 @@ public class Wheely implements NFRRobotContainer {
         NFRRotatingArmJointConfiguration armConfig = new NFRRotatingArmJointConfiguration(
             "arm_rotate",
             new Transform3d(),
-            Rotation2d.fromDegrees(0),
-            Rotation2d.fromDegrees(0),
+            null,
+            null,
             0,
             false,
             DCMotor.getFalcon500(1),
