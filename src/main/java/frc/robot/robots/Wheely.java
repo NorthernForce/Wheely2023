@@ -7,9 +7,11 @@ import org.northernforce.gyros.NFRNavX;
 import org.northernforce.motors.NFRSparkMax;
 import org.northernforce.motors.NFRTalonFX;
 import org.northernforce.subsystems.arm.NFRArmMotorExtensionJoint;
+import org.northernforce.subsystems.arm.NFRRotatingArmJoint;
 import org.northernforce.subsystems.arm.NFRArmMotorExtensionJoint.NFRArmMotorExtensionJointConfiguration;
 import org.northernforce.subsystems.arm.NFRSimpleMotorClaw;
 import org.northernforce.subsystems.arm.NFRSimpleMotorClaw.NFRSimpleMotorClawConfiguration;
+import org.northernforce.subsystems.arm.NFRRotatingArmJoint.NFRRotatingArmJointConfiguration;
 import org.northernforce.subsystems.drive.NFRDrive;
 import org.northernforce.subsystems.drive.NFRTankDrive;
 import org.northernforce.subsystems.drive.NFRTankDrive.NFRTankDriveConfiguration;
@@ -20,6 +22,7 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
@@ -38,6 +41,7 @@ public class Wheely implements NFRRobotContainer {
     private final NFRSparkMax extensionMotor; //hack should be getable from joint class in future
 
     private final NFRSimpleMotorClaw claw;
+    private final NFRRotatingArmJoint arm;
     public Wheely()
     {
         NFRTankDriveConfiguration driveConfig = new NFRTankDriveConfiguration(
@@ -96,6 +100,27 @@ public class Wheely implements NFRRobotContainer {
             }),
             Optional.empty()
         );
+        TalonFXConfiguration armMotorConfig = new TalonFXConfiguration();
+        armMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
+        armMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        armMotorConfig.CurrentLimits.SupplyCurrentThreshold = 60;
+        armMotorConfig.CurrentLimits.SupplyTimeThreshold = 0.1;
+        NFRTalonFX armMotor = new NFRTalonFX(armMotorConfig, 10);
+        NFRRotatingArmJointConfiguration armConfig = new NFRRotatingArmJointConfiguration(
+            "arm_rotate",
+            new Transform3d(),
+            null,
+            null,
+            0,
+            false,
+            DCMotor.getFalcon500(1),
+            10,
+            Units.inchesToMeters(42.5),
+            Units.lbsToKilograms(15),
+            Rotation2d.fromDegrees(0),
+            false
+        );
+        arm = new NFRRotatingArmJoint(armConfig, armMotor, Optional.empty(), Optional.empty());
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID) {
@@ -124,6 +149,9 @@ public class Wheely implements NFRRobotContainer {
                 .whileTrue(claw.getOpenCommand());
             new Trigger(() -> manipulatorController.getRightTriggerAxis() > 0.5)
                 .whileTrue(claw.getCloseCommand());
+            arm.setDefaultCommand(arm.getDefaultRotatingArmCommand(() -> -MathUtil.applyDeadband(
+                manipulatorController.getLeftY(), 0.1
+            )));
         }
     }
     @Override
