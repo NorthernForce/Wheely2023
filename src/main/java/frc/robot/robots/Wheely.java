@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.northernforce.gyros.NFRNavX;
+import org.northernforce.motors.MotorEncoderMismatchException;
 import org.northernforce.motors.NFRSparkMax;
 import org.northernforce.motors.NFRTalonFX;
 import org.northernforce.subsystems.arm.NFRArmMotorExtensionJoint;
@@ -63,8 +64,8 @@ public class Wheely implements NFRRobotContainer {
         NFRSparkMax leftSide = new NFRSparkMax(MotorType.kBrushless, 1, 3);
         NFRSparkMax rightSide = new NFRSparkMax(MotorType.kBrushless, 2, 4);
         NFRNavX navx = new NFRNavX();
-        leftSide.setInverted(false);
-        rightSide.setInverted(true);
+        leftSide.setInverted(true);
+        rightSide.setInverted(false);
         drive = new NFRTankDrive(driveConfig, leftSide, rightSide, navx);
 
         NFRArmMotorExtensionJointConfiguration extensionConfig =  new NFRArmMotorExtensionJointConfiguration(
@@ -78,6 +79,12 @@ public class Wheely implements NFRRobotContainer {
             0.05
         );
         extensionMotor = new NFRSparkMax(MotorType.kBrushless, 11);
+        try {
+            extensionMotor.setSelectedEncoder(extensionMotor.getIntegratedEncoder());
+        } catch (MotorEncoderMismatchException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         extensionJoint = new NFRArmMotorExtensionJoint(extensionConfig, extensionMotor, Optional.empty(), Optional.empty());
         TalonFXConfiguration clawMotorConfig = new TalonFXConfiguration();
         clawMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -128,7 +135,7 @@ public class Wheely implements NFRRobotContainer {
         {
             XboxController driverController = (XboxController)driverHID;
             XboxController manipulatorController = (XboxController)manipulatorHID;
-
+            System.out.println("Binding!!!\n");
             drive.setDefaultCommand(drive.getDefaultDriveCommand(
                 () -> -MathUtil.applyDeadband(driverController.getLeftY(), 0.07),
                 () -> -MathUtil.applyDeadband(driverController.getRightX(), 0.07)
