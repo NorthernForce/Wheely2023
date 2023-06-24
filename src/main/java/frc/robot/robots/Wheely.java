@@ -28,6 +28,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import static frc.robot.constants.WheelyConstants.*;
 
 public class Wheely implements NFRRobotContainer {
@@ -122,6 +124,11 @@ public class Wheely implements NFRRobotContainer {
                 .onTrue(extensionJoint.getExtendBySpeedCommand(armSpeed));
             new JoystickButton(manipulatorController, XboxController.Button.kLeftBumper.value)
                 .onTrue(extensionJoint.getRetractBySpeedCommand(armSpeed));
+
+            new Trigger(() -> manipulatorController.getLeftTriggerAxis() > 0.5)
+                .whileTrue(claw.getOpenCommand());
+            new Trigger(() -> manipulatorController.getRightTriggerAxis() > 0.5)
+                .whileTrue(claw.getCloseCommand());
         }
     }
     @Override
