@@ -35,7 +35,7 @@ import static frc.robot.constants.WheelyConstants.*;
 public class Wheely implements NFRRobotContainer {
     private final NFRDrive drive;
     private final NFRArmMotorExtensionJoint extensionJoint;
-    private final NFRTalonFX extensionMotor; //hack should be getable from joint class in future
+    private final NFRSparkMax extensionMotor; //hack should be getable from joint class in future
 
     private final NFRSimpleMotorClaw claw;
     public Wheely()
@@ -73,12 +73,7 @@ public class Wheely implements NFRRobotContainer {
             false,
             0.05
         );
-        TalonFXConfiguration extensionMotorConfig = new TalonFXConfiguration();
-        extensionMotorConfig.CurrentLimits.SupplyCurrentLimit = 40;
-        extensionMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-        extensionMotorConfig.CurrentLimits.SupplyCurrentThreshold = 60;
-        extensionMotorConfig.CurrentLimits.SupplyTimeThreshold = 0.1;
-        extensionMotor = new NFRTalonFX(extensionMotorConfig, 11);
+        extensionMotor = new NFRSparkMax(MotorType.kBrushless, 11);
         extensionJoint = new NFRArmMotorExtensionJoint(extensionConfig, extensionMotor, Optional.empty(), Optional.empty());
         TalonFXConfiguration clawMotorConfig = new TalonFXConfiguration();
         clawMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
