@@ -8,6 +8,8 @@ import org.northernforce.motors.NFRSparkMax;
 import org.northernforce.motors.NFRTalonFX;
 import org.northernforce.subsystems.arm.NFRArmMotorExtensionJoint;
 import org.northernforce.subsystems.arm.NFRArmMotorExtensionJoint.NFRArmMotorExtensionJointConfiguration;
+import org.northernforce.subsystems.arm.NFRSimpleMotorClaw;
+import org.northernforce.subsystems.arm.NFRSimpleMotorClaw.NFRSimpleMotorClawConfiguration;
 import org.northernforce.subsystems.drive.NFRDrive;
 import org.northernforce.subsystems.drive.NFRTankDrive;
 import org.northernforce.subsystems.drive.NFRTankDrive.NFRTankDriveConfiguration;
@@ -26,6 +28,8 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import static frc.robot.constants.WheelyConstants.*;
 
 public class Wheely implements NFRRobotContainer {
@@ -33,6 +37,7 @@ public class Wheely implements NFRRobotContainer {
     private final NFRArmMotorExtensionJoint extensionJoint;
     private final NFRTalonFX extensionMotor; //hack should be getable from joint class in future
 
+    private final NFRSimpleMotorClaw claw;
     public Wheely()
     {
         NFRTankDriveConfiguration driveConfig = new NFRTankDriveConfiguration(
@@ -75,6 +80,27 @@ public class Wheely implements NFRRobotContainer {
         extensionMotorConfig.CurrentLimits.SupplyTimeThreshold = 0.1;
         extensionMotor = new NFRTalonFX(extensionMotorConfig, 11);
         extensionJoint = new NFRArmMotorExtensionJoint(extensionConfig, extensionMotor, Optional.empty(), Optional.empty());
+        TalonFXConfiguration clawMotorConfig = new TalonFXConfiguration();
+        clawMotorConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+        clawMotorConfig.CurrentLimits.SupplyCurrentThreshold = 30;
+        clawMotorConfig.CurrentLimits.SupplyTimeThreshold = 0.5;
+        NFRTalonFX clawMotor = new NFRTalonFX(clawMotorConfig, 13);
+        NFRSimpleMotorClawConfiguration clawConfig = new NFRSimpleMotorClawConfiguration("claw")
+            .withOpenSpeed(0.6)
+            .withCloseSpeed(-0.6)
+            .withUseLimitSwitches(true);
+        claw = new NFRSimpleMotorClaw(
+            clawConfig,
+            clawMotor,
+            Optional.empty(),
+            Optional.of(() -> {
+                return clawMotor.getTorqueCurrent().getValue() > 20;
+            }),
+            Optional.of(() -> {
+                return clawMotor.getTorqueCurrent().getValue() > 20;
+            }),
+            Optional.empty()
+        );
     }
     @Override
     public void bindOI(GenericHID driverHID, GenericHID manipulatorHID) {
@@ -98,6 +124,11 @@ public class Wheely implements NFRRobotContainer {
                 .onTrue(extensionJoint.getExtendBySpeedCommand(armSpeed));
             new JoystickButton(manipulatorController, XboxController.Button.kLeftBumper.value)
                 .onTrue(extensionJoint.getRetractBySpeedCommand(armSpeed));
+
+            new Trigger(() -> manipulatorController.getLeftTriggerAxis() > 0.5)
+                .whileTrue(claw.getOpenCommand());
+            new Trigger(() -> manipulatorController.getRightTriggerAxis() > 0.5)
+                .whileTrue(claw.getCloseCommand());
         }
     }
     @Override
